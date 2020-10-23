@@ -1,27 +1,25 @@
+body {
+    padding: 60px 0 60px 0;
+}
 
+.table_col1 {
+    width: 25%;
+}
 
+.table_col2 {
+    width: 50%;
+}
 
-.carousel-inner img{
+.table_col3 {
 
 }
-.container h3,p{
-    text-align: center;
-    margin: 20px 0;
+
+.table_col4 {
+
 }
-body{
-    padding-top: 60px;
-    padding-bottom: 100px;
-    font-family:"Microsoft Yahei",Arial;
-    font-size:12px;
-    line-height:24px;
-    color:#444444;
-    background:#fff;
-}
-.bottom-tab{
-    text-align: center;
-    line-height: 24px;
-    margin: 0;
-    font-size: 14px;
+
+.table_col5 {
+    width: 25%;
 }
 
 /* 超小屏幕（手机，小于 768px） */
@@ -29,19 +27,33 @@ body{
 
 /* 小屏幕（平板，大于等于 768px） */
 @media (min-width: 768px) {
+        .table_col1 {
+        width: 15%;
+    }
 
+    .table_col2 {
+        width: 35%;
+    }
+
+    .table_col3 {
+        width: 15%;
+    }
+
+    .table_col4 {
+        width: 20%;
+    }
+
+    .table_col5 {
+        width: 15%;
+    }
 }
 
 /* 中等屏幕（桌面显示器，大于等于 992px） */
 @media (min-width: 992px) {
-    .bottom-tab{
-        font-size: 17px;
-    }
+
 }
 
 /* 大屏幕（大桌面显示器，大于等于 1200px） */
 @media (min-width: 1200px) {
-    .bottom-tab{
-        font-size: 18px;
-    }
+
 }
