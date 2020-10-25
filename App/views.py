@@ -35,16 +35,14 @@ def testbs(request):
 def formsearch(request):
     if request.is_ajax():
         page = request.GET.get('page')
-        searchform = request.GET.get('searchform')
-        print(searchform)
-        formid = searchform.get('formid')
-        keyword = searchform.get('keyword')
-        createman = searchform.get('createman')
-        dealman = searchform.get('dealman')
-        status = searchform.get('status')
-        formtype = searchform.get('formtype')
-        begintime = searchform.get('begintime')
-        endtime = searchform.get('endtime')
+        formid = request.GET.get('formid')
+        keyword = request.GET.get('keyword')
+        createman = request.GET.get('createman')
+        dealman = request.GET.get('dealman')
+        status = request.GET.get('status')
+        formtype = request.GET.get('formtype')
+        begintime = request.GET.get('begintime')
+        endtime = request.GET.get('endtime')
         searchresult = ImeiForm.objects.filter(Q(_f_status=status)).filter(Q(f_type=formtype))
         if formid.strip() != '':
             searchresult = searchresult.filter(Q(id=formid))
@@ -62,7 +60,7 @@ def formsearch(request):
         result = {'has_previous': page_object.has_previous(),
                   'has_next': page_object.has_next(),
                   'result_list': result_list}
-        print(result)
+        # print(result)
         return JsonResponse(result)
     elif request.method == 'GET':
         print(2)
@@ -80,17 +78,6 @@ def formsearch(request):
         formtype = request.POST.get('inputType')
         begintime = request.POST.get('inputBegintime')
         endtime = request.POST.get('inputEndtime')
-        searchform = {
-            'formid': formid,
-            'keyword': keyword,
-            'createman': createman,
-            'dealman': dealman,
-            'status': status,
-            'formtype': formtype,
-            'begintime': begintime,
-            'endtime': endtime,
-
-        }
         searchresult = ImeiForm.objects.filter(Q(_f_status=status)).filter(Q(f_type=formtype))
         if formid.strip() != '':
             searchresult = searchresult.filter(Q(id=formid))
@@ -111,7 +98,14 @@ def formsearch(request):
             'formlist': page_object,
             'page_range': paginator.page_range,
             'page': 1,
-            'searchform': searchform,
+            'formid': formid,
+            'keyword': keyword,
+            'createman': createman,
+            'dealman': dealman,
+            'status': status,
+            'formtype': formtype,
+            'begintime': begintime,
+            'endtime': endtime,
             'resultlength': resultlength
         }
         return render(request, 'main_search.html', context=data)

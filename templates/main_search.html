@@ -223,14 +223,15 @@
                     type: 'get',
                     url: '{% url 'app:search' %}',
                     data: {page: now_page,
-                        formid:{% searchform.get('formid') %},
-                        keyword:{% searchform.get('keyword') %},
-                        createman:{% searchform.get('createman') %},
-                        dealman:{% searchform.get('dealman') %},
-                        status:{% searchform.get('status') %},
-                        formtype:{% searchform.get('formtype') %},
-                        begintime:{% searchform.get('begintime') %},
-                        endtime:{% searchform.get('endtime') %},},
+                        formid:'{{ formid }}',
+                        keyword:'{{ keyword }}',
+                        createman:'{{ createman }}',
+                        dealman:'{{ dealman }}',
+                        status:'{{ status }}',
+                        formtype:'{{ formtype }}',
+                        begintime:'{{ begintime }}',
+                        endtime:'{{ endtime }}',
+                    },
                     success: function (data) {
                         $('#result_table tr').remove();
                         if (data.has_previous === true) {
