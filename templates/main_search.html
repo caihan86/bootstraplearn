@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_main.html' %}
 {% load static %}
 
 {% block ext_css %}
@@ -25,13 +25,14 @@
                     <li class="active"><a href="{% url 'app:search' %}">工单查询</a></li>
                 </ul>
                 <form class="navbar-form navbar-right">
+                    {% csrf_token %}
                     <div class="form-group form-group-sm">
-                        <input type="text" class="form-control" name="formid" placeholder="请输入单号">
+                        <input type="text" class="form-control" id="topform_id" name="formid" placeholder="请输入单号">
                     </div>
-                    <button type="button" class="btn btn-default btn-sm">&nbsp&nbsp查&nbsp&nbsp询&nbsp&nbsp</button>
+                    <button id="topbtn" type="button" class="btn btn-default btn-sm">&nbsp&nbsp查&nbsp&nbsp询&nbsp&nbsp
+                    </button>
                 </form>
             </div>
-
         </div>
     </nav>
 {% endblock %}
@@ -47,66 +48,103 @@
 
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
                             <input type="text" class="form-control" id="inputFormid" name="inputFormid"
-                                   placeholder="请输入单号">
+                                   placeholder="请输入单号" value="{{ formid|default:'' }}">
                         </div>
 
                         <label for="inputKeyword" class="col-md-2 col-sm-2 control-label">关键字：</label>
 
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
                             <input type="text" class="form-control" id="inputKeyword" name="inputKeyword"
-                                   placeholder="请输入关键字">
+                                   placeholder="请输入关键字" value="{{ keyword|default:'' }}">
                         </div>
 
                         <label for="inputCreateman" class="col-md-2 col-sm-2 control-label">提交人：</label>
 
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
                             <input type="text" class="form-control" id="inputCreateman" name="inputCreateman"
-                                   placeholder="请输入提交人">
+                                   placeholder="请输入提交人" value="{{ createman|default:'' }}">
                         </div>
 
                         <label for="inputDealman" class="col-md-2 col-sm-2 control-label">当前处理人：</label>
 
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
                             <input type="text" class="form-control" id="inputDealman" name="inputDealman"
-                                   placeholder="请输入当前处理人">
+                                   placeholder="请输入当前处理人" value="{{ dealman|default:'' }}">
                         </div>
                         <label for="inputStatus" class="col-md-2 col-sm-2 control-label">状态：</label>
-
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
-                            <select name="inputStatus" class="form-control">
-                                <option value="0" class="text-muted">新建</option>
-                                <option value="1" class="text-muted">已提交</option>
-                                <option value="2" class="text-muted">处理中</option>
-                                <option value="3" class="text-muted">已审批</option>
-                                <option value="4" class="text-muted">已退回</option>
-                                <option value="5" class="text-muted">已作废</option>
+                            <select id="inputStatus" name="inputStatus" class="form-control">
+                                {% ifequal status '0' %}
+                                    <option value="0" class="text-muted" selected>新建</option>
+                                {% else %}
+                                    <option value="0" class="text-muted">新建</option>
+                                {% endifequal %}
+                                {% ifequal status '1' %}
+                                    <option value="1" class="text-muted" selected>已提交</option>
+                                {% else %}
+                                    <option value="1" class="text-muted">已提交</option>
+                                {% endifequal %}
+                                {% ifequal status '2' %}
+                                    <option value="2" class="text-muted" selected>处理中</option>
+                                {% else %}
+                                    <option value="2" class="text-muted">处理中</option>
+                                {% endifequal %}
+                                {% ifequal status '3' %}
+                                    <option value="3" class="text-muted" selected>已审批</option>
+                                {% else %}
+                                    <option value="3" class="text-muted">已审批</option>
+                                {% endifequal %}
+                                {% ifequal status '4' %}
+                                    <option value="4" class="text-muted" selected>已退回</option>
+                                {% else %}
+                                    <option value="4" class="text-muted">已退回</option>
+                                {% endifequal %}
+                                {% ifequal status '5' %}
+                                    <option value="5" class="text-muted" selected>新建</option>
+                                {% else %}
+                                    <option value="5" class="text-muted">已作废</option>
+                                {% endifequal %}
                             </select>
                         </div>
                         <label for="inputType" class="col-md-2 col-sm-2 control-label">工单类型：</label>
 
                         <div class="col-md-2 col-sm-4" style="margin-bottom: 10px">
-                            <select name="inputType" class="form-control">
-                                <option value="modifytype" class="text-muted">捆绑修改</option>
-                                <option value="canceltype" class="text-muted">取消捆绑</option>
+                            <select id="inputType" name="inputType" class="form-control">
+                                {% ifequal formtype 'modifytype' %}
+                                    <option value="modifytype" class="text-muted" selected>捆绑修改</option>
+                                {% else %}
+                                    <option value="modifytype" class="text-muted">捆绑修改</option>
+                                {% endifequal %}
+                                {% ifequal formtype 'canceltype' %}
+                                    <option value="canceltype" class="text-muted" selected>取消捆绑</option>
+                                {% else %}
+                                    <option value="canceltype" class="text-muted">取消捆绑</option>
+                                {% endifequal %}
                             </select>
                         </div>
                         <label for="inputCreatetime" class="col-md-2 col-sm-4 control-label">创建日期：</label>
 
                         <div class="col-md-6 col-sm-8" style="margin-bottom: 10px">
                             <div class="input-group input-group-sm">
-                                <input type="date" class="form-control" id="inputBegintime" name="inputBegintime">
+                                <input type="date" class="form-control" id="inputBegintime" name="inputBegintime"
+                                       value="{{ begintime|default:'' }}">
                                 <span class="input-group-addon" id="basic-addon1">至</span>
-                                <input type="date" class="form-control" id="inputEndtime" name="inputEndtime">
+                                <input type="date" class="form-control" id="inputEndtime" name="inputEndtime"
+                                       value="{{ endtime|default:'' }}">
                             </div>
                         </div>
                         <div class="col-md-4 text-center" style="margin-bottom: 10px">
                             <button class="btn btn-primary btn-sm" type="submit">
                                 &nbsp&nbsp&nbsp&nbsp查&nbsp&nbsp&nbsp&nbsp询&nbsp&nbsp&nbsp&nbsp
                             </button>
+                            <button id="resetbtn" class="btn btn-primary btn-sm" type="reset">
+                                &nbsp&nbsp&nbsp&nbsp重&nbsp&nbsp&nbsp&nbsp置&nbsp&nbsp&nbsp&nbsp
+                            </button>
                         </div>
                     </div>
                 </form>
             </div>
+
             <div class="panel-body">
                 <table class="table table-hover table-striped">
                     <thead>
@@ -121,10 +159,10 @@
                     <tbody id="result_table">
                     {% for iform in formlist %}
                         <tr>
-                            <td><a href="#">{{ iform.id }}</a></td>
-                            <td><a href="#">{{ iform.f_title }}</a></td>
+                            <td><a href="#" onclick="opendetail({{ iform.id }})">{{ iform.id }}</a></td>
+                            <td><a href="#" onclick="opendetail({{ iform.id }})">{{ iform.f_title }}</a></td>
                             <td class="hidden-xs">{{ iform.f_dealman }}</td>
-                            <td class="hidden-xs">{{ iform.f_lastmodifytime }}</td>
+                            <td class="hidden-xs">{{ iform.f_lastmodifytime|date:"Y-m-d H:i:s" }}</td>
                             <td>{{ iform.f_status }}</td>
                         </tr>
                     {% endfor %}
@@ -134,26 +172,26 @@
                     <nav id="pagenav" aria-label="Page navigation">
                         <ul class="pagination">
                             <li id="previoustag" class="disabled">
-                                <a href="#" aria-label="Previous">
+                                <a href="#result_table" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
                             {% for page_num in page_range %}
                                 {% ifequal page_num page %}
-                                    <li class="active pagetag"><a href="#">{{ page_num }}</a></li>
+                                    <li class="active pagetag"><a href="#result_table">{{ page_num }}</a></li>
                                 {% else %}
-                                    <li class="pagetag"><a href="#">{{ page_num }}</a></li>
+                                    <li class="pagetag"><a href="#result_table">{{ page_num }}</a></li>
                                 {% endifequal %}
                             {% endfor %}
                             {% if formlist.has_next %}
                                 <li id="nexttag">
-                                    <a href="#" aria-label="Next">
+                                    <a href="#result_table" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                             {% else %}
                                 <li id="nexttag" class="disabled">
-                                    <a href="#" aria-label="Next">
+                                    <a href="#result_table" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -173,20 +211,63 @@
 
 {% block footer %}
     {{ block.super }}
-    <footer>
-        <nav class="navbar navbar-default navbar-fixed-bottom">
-            <div class="container ">
-                <h5 class="text-center text-muted">Copyright.caihan</h5>
-                <p class="text-center text-muted">Email:14768454@qq.com</p>
-            </div>
-        </nav>
-
-    </footer>
 {% endblock %}
 
 {% block  ext_js %}
     <script type="text/javascript" charset="UTF-8">
+        $('#topbtn').click(function () {
+            let formid = $('#topform_id').val()
+            if (formid === '') {
+                $.alert({
+                    title: 'Warnning！',
+                    content: '工单编号不存在',
+                    theme: 'bootstrap',
+                });
+            } else {
+                $.ajax({
+                    url: "{% url 'app:formvalid' %}",
+                    type: "GET",
+                    data: {id: formid},
+                    success: function (data) {
+                        if (data.is_exist) {
+                            window.open('/app/formdetail/' + formid + '/')
+                        } else {
+                            $.alert({
+                                title: 'Warnning！',
+                                content: '工单编号不存在',
+                                theme: 'bootstrap',
+                            });
+                        }
+                    },
+
+                    error: function (jqXHR, textStatus, err) {
+                        console.log(arguments);
+                    },
+
+                    complete: function (jqXHR, textStatus) {
+                        console.log(textStatus);
+                    },
+
+                    statusCode: {
+                        '403': function (jqXHR, textStatus, err) {
+                            console.log(arguments);
+                        },
+
+                        '400': function (jqXHR, textStatus, err) {
+                            console.log(arguments);
+                        }
+                    }
+                })
+            }
+
+        });
+
+        function opendetail(id) {
+            window.open('/app/formdetail/' + id + '/')
+        }
+
         $(function () {
+
             // ajax分页
             let now_page = 1
             //上一页
@@ -196,7 +277,7 @@
                     now_page = 1;
                     return false
                 } else {
-                    $('.pagetag').parent().prev().click();
+                    $('.pagination .active').prev().click();
                 }
             });
             //下一页
@@ -207,7 +288,7 @@
                     now_page -= 1;
                     return false
                 } else {
-                    $('.pagetag').parent().next().click();
+                    $('.pagination .active').next().click();
                 }
             });
             //切换页
@@ -222,15 +303,16 @@
                 $.ajax({
                     type: 'get',
                     url: '{% url 'app:search' %}',
-                    data: {page: now_page,
-                        formid:'{{ formid }}',
-                        keyword:'{{ keyword }}',
-                        createman:'{{ createman }}',
-                        dealman:'{{ dealman }}',
-                        status:'{{ status }}',
-                        formtype:'{{ formtype }}',
-                        begintime:'{{ begintime }}',
-                        endtime:'{{ endtime }}',
+                    data: {
+                        page: now_page,
+                        formid: '{{ formid }}',
+                        keyword: '{{ keyword }}',
+                        createman: '{{ createman }}',
+                        dealman: '{{ dealman }}',
+                        status: '{{ status }}',
+                        formtype: '{{ formtype }}',
+                        begintime: '{{ begintime }}',
+                        endtime: '{{ endtime }}',
                     },
                     success: function (data) {
                         $('#result_table tr').remove();
@@ -245,12 +327,12 @@
                             $('#nexttag').addClass('disabled');
                         }
                         $.each(data.result_list, function (index, formdata) {
-                            let td_a = '<td><a href="#">';
+                            let td_a = '<td><a href="#"  onclick="opendetail(' + formdata.id + ')">';
                             let hidden_td = '<td class="hidden-xs">'
                             let a = '<td>'
                             let b = '</td>';
                             let a_td = '</a></td>'
-                            let body =a+formdata.id+a_td+td_a+formdata.f_title+a_td+hidden_td+formdata.f_dealman+b+hidden_td+formdata.f_lastmodifytime+b+a+formdata.f_status+b
+                            let body = td_a + formdata.id + a_td + td_a + formdata.f_title + a_td + hidden_td + formdata.f_dealman + b + hidden_td + formdata.f_lastmodifytime + b + a + formdata._f_status + b
                             $('#result_table').append('<tr>' + body + '</tr>');
                         });
                     }

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_main.html' %}
 {% load static %}
 
 {% block ext_css %}
@@ -25,10 +25,12 @@
                     <li><a href="{% url 'app:search' %}">工单查询</a></li>
                 </ul>
                 <form class="navbar-form navbar-right">
+                    {% csrf_token %}
                     <div class="form-group form-group-sm">
-                        <input type="text" class="form-control" name="formid" placeholder="请输入单号">
+                        <input type="text" class="form-control" id="topform_id" name="formid" placeholder="请输入单号">
                     </div>
-                    <button type="button" class="btn btn-default btn-sm">&nbsp&nbsp查&nbsp&nbsp询&nbsp&nbsp</button>
+                    <button id="topbtn" type="button" class="btn btn-default btn-sm">&nbsp&nbsp查&nbsp&nbsp询&nbsp&nbsp
+                    </button>
                 </form>
             </div>
         </div>
@@ -53,8 +55,6 @@
                         <button class="btn btn-default">取消捆绑工单</button>
                     </div>
                 </div>
-
-
             </div>
         </div>
         <div class="panel panel-default">
@@ -74,18 +74,53 @@
                         <th class="table_col5">当前状态</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="deal_resulttable">
                     {% for form in dealformlist %}
                         <tr>
-                            <td><a href="#">{{ form.id }}</a></td>
-                            <td><a href="#">{{ form.f_title }}</a></td>
+                            <td><a href="#" onclick="opendetail({{ form.id }})">{{ form.id }}</a></td>
+                            <td><a href="#" onclick="opendetail({{ form.id }})">{{ form.f_title }}</a></td>
                             <td class="hidden-xs">{{ form.f_lastdealman }}</td>
-                            <td class="hidden-xs">{{ form.f_lastmodifytime }}</td>
-                            <td>处理中</td>
+                            <td class="hidden-xs">{{ form.f_lastmodifytime|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ form.f_status }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+                {% if deal_count %}
+                    <nav id="pagenav_deal" aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li id="previoustag_deal" class="disabled">
+                                <a href="#" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% for page_num in deal_range %}
+                                {% ifequal page_num page %}
+                                    <li class="active pagetag_deal"><a href="#">{{ page_num }}</a></li>
+                                {% else %}
+                                    <li class="pagetag_deal"><a href="#">{{ page_num }}</a></li>
+                                {% endifequal %}
+                            {% endfor %}
+                            {% if dealformlist.has_next %}
+                                <li id="nexttag_deal">
+                                    <a href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li id="nexttag_deal" class="disabled">
+                                    <a href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li>
+                                <span aria-hidden="true">共  {{ deal_range.stop|add:-1 }}  页</span>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
             </div>
         </div>
         <div class="panel panel-default">
@@ -105,18 +140,53 @@
                         <th class="table_col5">当前状态</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="my_resulttable">
                     {% for form in myformlist %}
                         <tr>
-                        <td><a href="#">{{ form.id }}</a></td>
-                        <td><a href="#">{{ form.f_title }}</a></td>
-                        <td class="hidden-xs">{{ form.f_dealman }}</td>
-                        <td class="hidden-xs">{{ form.f_lastmodifytime }}</td>
-                        <td>处理中</td>
-                    </tr>
+                            <td><a href="#" onclick="opendetail({{ form.id }})">{{ form.id }}</a></td>
+                            <td><a href="#" onclick="opendetail({{ form.id }})">{{ form.f_title }}</a></td>
+                            <td class="hidden-xs">{{ form.f_dealman }}</td>
+                            <td class="hidden-xs">{{ form.f_lastmodifytime|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ form.f_status }}</td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+                {% if my_count %}
+                    <nav id="pagenav_my" aria-label="Page navigation">
+                        <ul class="pagination">
+                            <li id="previoustag_my" class="disabled">
+                                <a href="#my_resulttable" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            {% for page_num in my_range %}
+                                {% ifequal page_num page %}
+                                    <li class="active pagetag_my"><a href="#my_resulttable">{{ page_num }}</a></li>
+                                {% else %}
+                                    <li class="pagetag_my"><a href="#my_resulttable">{{ page_num }}</a></li>
+                                {% endifequal %}
+                            {% endfor %}
+                            {% if myformlist.has_next %}
+                                <li id="nexttag_my">
+                                    <a href="#my_resulttable" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li id="nexttag_my" class="disabled">
+                                    <a href="#my_resulttable" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li>
+                                <span aria-hidden="true">共  {{ my_range.stop|add:-1 }}  页</span>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -124,17 +194,182 @@
 
 {% block footer %}
     {{ block.super }}
-    <footer>
-        <nav class="navbar navbar-default navbar-fixed-bottom">
-            <div class="container ">
-                <h5 class="text-center text-muted">Copyright.caihan</h5>
-                <p class="text-center text-muted">Email:14768454@qq.com</p>
-            </div>
-        </nav>
-
-    </footer>
 {% endblock %}
 
 {% block  ext_js %}
+    <script type="text/javascript" charset="UTF-8">
+        function opendetail(id) {
+            window.open('/app/formdetail/' + id + '/')
+        }
 
+        $('#topbtn').click(function () {
+            let formid = $('#topform_id').val()
+            if (formid === '') {
+                $.alert({
+                    title: 'Warnning！',
+                    content: '工单编号不存在',
+                    theme: 'bootstrap',
+                });
+            } else {
+                $.ajax({
+                    url: "{% url 'app:formvalid' %}",
+                    type: "GET",
+                    data: {id: formid},
+                    success: function (data) {
+                        if (data.is_exist) {
+                            window.open('/app/formdetail/' + formid + '/')
+                        } else {
+                            $.alert({
+                                title: 'Warnning！',
+                                content: '工单编号不存在',
+                                theme: 'bootstrap',
+                            });
+                        }
+                    },
+
+                    error: function (jqXHR, textStatus, err) {
+                        console.log(arguments);
+                    },
+
+                    complete: function (jqXHR, textStatus) {
+                        console.log(textStatus);
+                    },
+
+                    statusCode: {
+                        '403': function (jqXHR, textStatus, err) {
+                            console.log(arguments);
+                        },
+
+                        '400': function (jqXHR, textStatus, err) {
+                            console.log(arguments);
+                        }
+                    }
+                })
+            }
+
+
+        });
+        $(function () {
+            // ajax分页
+            let my_now_page = 1
+            let deal_now_page = 1
+            //上一页
+            $('#previoustag_deal').click(function () {
+                deal_now_page -= 1;
+                if (deal_now_page < 1) {
+                    deal_now_page = 1;
+                    return false
+                } else {
+                    $('#pagenav_deal .active').prev().click();
+                }
+            });
+            $('#previoustag_my').click(function () {
+                my_now_page -= 1;
+                if (my_now_page < 1) {
+                    my_now_page = 1;
+                    return false
+                } else {
+                    $('#pagenav_my .active').prev().click();
+                }
+            });
+            //下一页
+            $('#nexttag_deal').click(function () {
+                let num_pages = $('.pagetag_deal a').last().text();
+                deal_now_page += 1;
+                if (deal_now_page > parseInt(num_pages)) {
+                    deal_now_page -= 1;
+                    return false
+                } else {
+                    $('#pagenav_deal .active').next().click();
+                }
+            });
+            $('#nexttag_my').click(function () {
+                let num_pages = $('.pagetag_my a').last().text();
+                my_now_page += 1;
+                if (my_now_page > parseInt(num_pages)) {
+                    my_now_page -= 1;
+                    return false
+                } else {
+                    $('#pagenav_my .active').next().click();
+                }
+            });
+            //切换页
+            $('.pagetag_deal').click(function () {
+                deal_now_page = parseInt($(this).children('a').text());
+                $('.pagetag_deal').removeClass('active');
+                $(this).addClass('active');
+                deal_page_click()
+            });
+            $('.pagetag_my').click(function () {
+                my_now_page = parseInt($(this).children('a').text());
+                $('.pagetag_my').removeClass('active');
+                $(this).addClass('active');
+                my_page_click()
+            });
+
+            function deal_page_click() {
+                $.ajax({
+                    type: 'get',
+                    url: '{% url 'app:getdealform' %}',
+                    data: {
+                        page: deal_now_page,
+                    },
+                    success: function (data) {
+                        $('#deal_resulttable tr').remove();
+                        if (data.has_previous === true) {
+                            $('#previoustag_deal').removeClass('disabled');
+                        } else {
+                            $('#previoustag_deal').addClass('disabled')
+                        }
+                        if (data.has_next === true) {
+                            $('#nexttag_deal ').removeClass('disabled');
+                        } else {
+                            $('#nexttag_deal').addClass('disabled');
+                        }
+                        $.each(data.result_list, function (index, formdata) {
+                            let td_a = '<td><a href="#"  onclick="opendetail(' + formdata.id + ')">';
+                            let hidden_td = '<td class="hidden-xs">'
+                            let a = '<td>'
+                            let b = '</td>';
+                            let a_td = '</a></td>'
+                            let body = td_a + formdata.id + a_td + td_a + formdata.f_title + a_td + hidden_td + formdata.f_dealman + b + hidden_td + formdata.f_lastmodifytime + b + a + formdata._f_status + b
+                            $('#deal_resulttable').append('<tr>' + body + '</tr>');
+                        });
+                    }
+                })
+            }
+
+            function my_page_click() {
+                $.ajax({
+                    type: 'get',
+                    url: '{% url 'app:getmyform' %}',
+                    data: {
+                        page: my_now_page,
+                    },
+                    success: function (data) {
+                        $('#my_resulttable tr').remove();
+                        if (data.has_previous === true) {
+                            $('#previoustag_my').removeClass('disabled');
+                        } else {
+                            $('#previoustag_my').addClass('disabled')
+                        }
+                        if (data.has_next === true) {
+                            $('#nexttag_my ').removeClass('disabled');
+                        } else {
+                            $('#nexttag_my').addClass('disabled');
+                        }
+                        $.each(data.result_list, function (index, formdata) {
+                            let td_a = '<td><a href="#"  onclick="opendetail(' + formdata.id + ')">';
+                            let hidden_td = '<td class="hidden-xs">'
+                            let a = '<td>'
+                            let b = '</td>';
+                            let a_td = '</a></td>'
+                            let body = td_a + formdata.id + a_td + td_a + formdata.f_title + a_td + hidden_td + formdata.f_dealman + b + hidden_td + formdata.f_lastmodifytime + b + a + formdata._f_status + b
+                            $('#my_resulttable').append('<tr>' + body + '</tr>');
+                        });
+                    }
+                })
+            }
+        })
+    </script>
 {% endblock %}

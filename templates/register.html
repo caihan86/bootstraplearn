@@ -12,7 +12,7 @@
 {% block content %}
     <div class="modal-dialog" style="margin-top: 15%;">
         <div class="modal-content">
-            <form action="{% url 'app:login' %}" method="post" enctype="multipart/form-data" onsubmit="paser_password()">
+            <form action="{% url 'app:register' %}" method="post" enctype="multipart/form-data" onsubmit="paser_password()">
                 {% csrf_token %}
                 <div class="modal-header">
 
@@ -26,7 +26,12 @@
                     </div>
                     <div class="form-group">
 
-                        <input type="password" class="form-control" id="password_input" name="password" placeholder="密码"
+                        <input type="text" class="form-control" name="mobile_number" placeholder="手机号码"
+                               autocomplete="off">
+                    </div>
+                    <div class="form-group">
+
+                        <input type="password" class="form-control" name="password" id="password_input" placeholder="密码"
                                autocomplete="off">
                     </div>
                 </div>

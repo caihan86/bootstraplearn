@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block ext_css %}
+    <link rel="stylesheet" href="{% static 'css/base_main.css' %}">
+{% endblock %}
+
+{% block header %}
+    {{ block.super }}
+
+{% endblock %}
+{% block content %}
+    {{ block.super }}
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    <footer>
+        <nav class="navbar navbar-inverse navbar-fixed-bottom">
+            <div class="container ">
+                <h5 class="text-center text-muted">Copyright.caihan</h5>
+                <p class="text-center text-muted">Email:14768454@qq.com</p>
+            </div>
+        </nav>
+    </footer>
+{% endblock %}
+
+{% block  ext_js %}
+
+{% endblock %}

@@ -1,23 +1,50 @@
+import uuid
+from time import sleep
+
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
-from App.models import ImeiForm
+from django.urls import reverse
+from django.views.decorators.cache import cache_page
+
+from App.models import ImeiForm, f_status_convert, User, DealRecorde, Attachment
+from App.utils import decrypt_data
 
 
 def index(request):
     if request.method == 'GET':
-        dealforms = ImeiForm.objects.filter(Q(f_dealman='测试人员2'))
-        myforms = ImeiForm.objects.filter(Q(f_createman='测试人员2'))
+        userid = request.session['userid']
+        user = User.objects.get(id=userid)
+        dealforms = ImeiForm.objects.filter(Q(f_dealman=user.username))
+        dealforms = dealforms.order_by('-f_lastmodifytime')
+        deal_paginator = Paginator(dealforms, 5)
+        dealformslist = deal_paginator.page(1)
+        deal_range = deal_paginator.page_range
+        deal_count = dealforms.count()
+        myforms = ImeiForm.objects.filter(Q(f_createman=user.username))
+        myforms = myforms.order_by('-f_lastmodifytime')
+        my_paginator = Paginator(myforms, 5)
+        myformslist = my_paginator.page(1)
+        my_range = my_paginator.page_range
+        my_count = myforms.count()
+
         data = {
             'title': 'ImeiM&C-个人中心',
-            'dealformlist': dealforms,
-            'myformlist': myforms
+            'dealformlist': dealformslist,
+            'deal_range': deal_range,
+            'deal_count': deal_count,
+            'myformlist': myformslist,
+            'my_range': my_range,
+            'my_count': my_count,
+            'page': 1,
         }
         return render(request, 'main_home.html', context=data)
     elif request.method == "POST":
+
         data = {
             'title': 'ImeiM&C-个人中心',
         }
@@ -25,7 +52,41 @@ def index(request):
 
 
 def login(request):
-    return render(request, 'login.html')
+    if request.method == 'GET':
+        data = {
+            'title': 'ImeiM&C-登陆页面'
+        }
+        return render(request, 'login.html', context=data)
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        password = decrypt_data(password)
+        user = User.objects.get(username=username)
+        if user and user.check_password(password):
+            response = redirect(reverse('app:home'))
+            request.session['userid'] = user.id
+            token = uuid.uuid4().hex
+            response.set_cookie('token', token, max_age=60 * 60 * 24 * 7)
+            cache.set(token, user.id, 60 * 60 * 24 * 7)
+            return response
+
+
+def register(request):
+    if request.method == 'GET':
+        data = {
+            'title': 'ImeiM&C-注册页面'
+        }
+        return render(request, 'register.html', context=data)
+    elif request.method == 'POST':
+        username = request.POST.get('username')
+        mobile_number = request.POST.get('mobile_number')
+        password = request.POST.get('password')
+        user = User()
+        user.username = username
+        user.mobile_number = mobile_number
+        user.password = decrypt_data(password)
+        user.save()
+        return redirect(reverse('app:login'))
 
 
 def testbs(request):
@@ -54,16 +115,19 @@ def formsearch(request):
             searchresult = searchresult.filter(Q(f_dealman=dealman))
         if begintime != '' and endtime != '':
             searchresult = searchresult.filter(Q(f_createtime__gte=begintime) & Q(f_createtime__lte=endtime))
+        searchresult = searchresult.order_by('-f_lastmodifytime')
         paginator = Paginator(searchresult, 10)
         page_object = paginator.page(page)
         result_list = list(page_object.object_list.values())
+        for formdata in result_list:
+            formdata['_f_status'] = f_status_convert.get(formdata['_f_status'])
+            formdata['f_lastmodifytime'] = formdata['f_lastmodifytime'].strftime('%Y-%m-%d %H:%M:%S')
         result = {'has_previous': page_object.has_previous(),
                   'has_next': page_object.has_next(),
                   'result_list': result_list}
-        # print(result)
+        # print(result_list)
         return JsonResponse(result)
     elif request.method == 'GET':
-        print(2)
         data = {
             'title': 'ImeiM&C-工单查询',
         }
@@ -89,6 +153,7 @@ def formsearch(request):
             searchresult = searchresult.filter(Q(f_dealman=dealman))
         if begintime != '' and endtime != '':
             searchresult = searchresult.filter(Q(f_createtime__gte=begintime) & Q(f_createtime__lte=endtime))
+        searchresult = searchresult.order_by('-f_lastmodifytime')
         paginator = Paginator(searchresult, 10)
         page_object = paginator.page(1)
         # print(len(list(page_object.object_list.values())))
@@ -112,24 +177,127 @@ def formsearch(request):
 
 
 def addform(request):
-    for i in range(1, 100):
+    for i in range(1, 10):
         iform = ImeiForm()
         iform.f_title = 'TestModify' + str(i)
         iform.f_content = '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试'
-        iform.f_createman = '测试人员1'
-        iform.f_lastdealman = '测试人员2'
-        iform.f_dealman = '测试人员3'
-        iform.f_type = 'modify'
+        iform.f_createman = 'caihan'
+        iform.f_lastdealman = '测试人员1'
+        iform.f_dealman = '测试人员2'
+        iform.f_type = 'modifytype'
         iform.f_status = '0'
         iform.save()
-    for i in range(1, 100):
+    for i in range(1, 10):
         iform = ImeiForm()
         iform.f_title = 'TestCancel' + str(i)
         iform.f_content = '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试'
-        iform.f_createman = '测试人员1'
-        iform.f_lastdealman = '测试人员2'
-        iform.f_dealman = '测试人员3'
-        iform.f_type = 'cancel'
+        iform.f_createman = '测试人员3'
+        iform.f_lastdealman = '测试人员1'
+        iform.f_dealman = 'caihan'
+        iform.f_type = 'canceltype'
         iform.f_status = '0'
         iform.save()
     return HttpResponse('ok')
+
+
+def getdealform(request):
+    if request.is_ajax():
+        userid = request.session['userid']
+        user = User.objects.get(id=userid)
+        pagenum = request.GET.get('page')
+        dealforms = ImeiForm.objects.filter(Q(f_dealman=user.username))
+        dealforms = dealforms.order_by('-f_lastmodifytime')
+        deal_paginator = Paginator(dealforms, 5)
+        page_object = deal_paginator.page(pagenum)
+        result_list = list(page_object.object_list.values())
+        for formdata in result_list:
+            formdata['_f_status'] = f_status_convert.get(formdata['_f_status'])
+            formdata['f_lastmodifytime'] = formdata['f_lastmodifytime'].strftime('%Y-%m-%d %H:%M:%S')
+        result = {'has_previous': page_object.has_previous(),
+                  'has_next': page_object.has_next(),
+                  'result_list': result_list}
+        # print(result_list)
+        return JsonResponse(result)
+
+
+def getmyform(request):
+    if request.is_ajax():
+        userid = request.session['userid']
+        user = User.objects.get(id=userid)
+        pagenum = request.GET.get('page')
+        myforms = ImeiForm.objects.filter(Q(f_createman=user.username))
+        myforms = myforms.order_by('-f_lastmodifytime')
+        my_paginator = Paginator(myforms, 5)
+        page_object = my_paginator.page(pagenum)
+        result_list = list(page_object.object_list.values())
+        for formdata in result_list:
+            formdata['_f_status'] = f_status_convert.get(formdata['_f_status'])
+            formdata['f_lastmodifytime'] = formdata['f_lastmodifytime'].strftime('%Y-%m-%d %H:%M:%S')
+        result = {'has_previous': page_object.has_previous(),
+                  'has_next': page_object.has_next(),
+                  'result_list': result_list}
+        # print(result_list)
+        return JsonResponse(result)
+
+
+def formdetail(request, id):
+    if request.method == 'GET':
+        formdata = ImeiForm.objects.get(id=id)
+        dealdata = formdata.form_dealrec.order_by('-dealtime')
+        attachdata = formdata.form_attach.order_by('-uploadtime')
+        for attach in attachdata:
+            print(attach.filename)
+        if formdata.f_type == 'modifytype':
+            formdata.f_type = '修改捆绑'
+        elif formdata.f_type == 'canceltype':
+            formdata.f_type = '取消捆绑'
+        data = {
+            'title': 'ImeiM&C-工单详情',
+            'formdata': formdata,
+            'dealdata': dealdata,
+            'attachdata': attachdata
+        }
+        return render(request, 'form_detail.html', context=data)
+
+
+def adddealrec(request, formid):
+    for i in range(1, 10):
+        dealrec = DealRecorde()
+        imeiform = ImeiForm.objects.get(id=formid)
+        dealrec.form = imeiform
+        dealrec.dealman = 'test' + str(i)
+        dealrec.dealcontent = '测试处理意见内容'
+        dealrec.save()
+    return HttpResponse('OK')
+
+
+def uploadfile(request):
+    if request.method == 'POST':
+        userid = request.session['userid']
+        user = User.objects.get(id=userid)
+        formid = request.POST.get('formid')
+        form = ImeiForm.objects.get(id=formid)
+        upload_file = request.FILES.get('file')
+        attach = Attachment()
+        attach.uploadman = user.username
+        attach.uploadfile = upload_file
+        attach.form = form
+        attach.save()
+        data = {
+            'is_valid': True,
+            'uploadman': attach.uploadman,
+            'uploadtime': attach.uploadtime.strftime('%Y-%m-%d %H:%M:%S'),
+            'filename': attach.filename,
+            'url': attach.uploadfile.url
+        }
+        return JsonResponse(data)
+
+
+def formvalid(request):
+    if request.is_ajax():
+        formid = request.GET.get('id')
+        formdata = ImeiForm.objects.filter(id=formid)
+        result = {'is_exist': False}
+        if formdata:
+            result = {'is_exist': True}
+        return JsonResponse(result)

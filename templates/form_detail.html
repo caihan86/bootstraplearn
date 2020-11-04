@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block ext_css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/form_detail.css' %}">
+{% endblock %}
+{% block header %}
+    {{ block.super }}
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h4>工单编号：{{ formdata.id }}
+                        <div style="float: right">工单类型：{{ formdata.f_type }}</div>
+                    </h4>
+                    <div class="text-center">
+                        <button class="btn btn-success">受理</button>
+                        <button class="btn btn-primary">释放</button>
+                        <button class="btn btn-info">退回</button>
+                        <button class="btn btn-warning">作废</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="container-fluid">
+                    <div class="row ">
+                        <div class="col-sm-2 detailtitle">
+                            <p>标题</p>
+                        </div>
+                        <div class="col-sm-10">
+                            <p>{{ formdata.f_title }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>提交人</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_createman }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>提交时间</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_createtime|date:"Y-m-d H:i:s" }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>当前处理人</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_dealman }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>当前状态</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_status }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>最后处理人</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_lastdealman }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle">
+                            <p>最后处理时间</p>
+                        </div>
+                        <div class="col-sm-4">
+                            <p>{{ formdata.f_lastmodifytime|date:"Y-m-d H:i:s" }}</p>
+                        </div>
+                        <div class="col-sm-2 detailtitle" style="height: 100px;">
+                            <p>工单描述</p>
+                        </div>
+                        <div class="col-sm-10" style="height: 100px;overflow: auto">
+                            <p style="line-height: 16px">{{ formdata.f_content }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h4>附件日志
+                        <button id="uploadbtn" class="btn btn-primary">上传文件</button>
+                        <input id="fileupload" type="file" name="file" multiple
+                               style="display: none;"
+                               data-url="{% url 'app:uploadfile' %}"
+                               data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}","formid": "{{ formdata.id }}"}'>
+                        <span class="small" style="color: red;">只支持txt、word、excel、jpg、png格式，且大小不超过5M</span>
+                        <button id="showattachbtn" href="#attachpanel" data-toggle="collapse" style="float: right">
+                            <span class="glyphicon glyphicon-menu-down" onclick=""></span></button>
+                    </h4>
+                </div>
+            </div>
+            <div id="attachpanel" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div class="container-fluid" style="border: solid 1px #aaaaaa">
+                        <div id="attachments" class="row" style="border: solid 1px #aaaaaa">
+                            {% for attachment in attachdata %}
+                                <div class="col-sm-2 col-xs-6 detailtitle"><p>上传人</p></div>
+                                <div class="col-sm-2 col-xs-6"><p>{{ attachment.uploadman }}</p></div>
+                                <div class="col-sm-2 col-xs-6 detailtitle"><p>上传时间</p></div>
+                                <div class="col-sm-3 col-xs-6"><p>{{ attachment.uploadtime|date:"Y-m-d H:i:s" }}</p>
+                                </div>
+                                <div class="col-sm-3 col-xs-12">
+                                    <p class="text-center"
+                                       style="width: 100%;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+                                        <a href="/static/upload{{ attachment.uploadfile.url }}"
+                                           download="{{ attachment.filename }}">{{ attachment.filename }}</a>
+                                    </p>
+                                </div>
+                            {% endfor %}
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <h4>处理日志
+                        <button id="showdealbtn" href="#dealcontent" data-toggle="collapse" style="float: right">
+                            <span class="glyphicon glyphicon-menu-down" onclick=""></span></button>
+                    </h4>
+
+                </div>
+            </div>
+            <div id="dealcontent" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div class="container-fluid" style="border: solid 1px #aaaaaa">
+                        {% for dealrec in dealdata %}
+                            <div class="row" style="border: solid 1px #aaaaaa">
+                                <div class="col-sm-3 col-xs-6 detailtitle"><p>处理人</p></div>
+                                <div class="col-sm-3 col-xs-6"><p>{{ dealrec.dealman }}</p></div>
+                                <div class="col-sm-3 col-xs-6 detailtitle"><p>处理时间</p></div>
+                                <div class="col-sm-3 col-xs-6"><p>{{ dealrec.dealtime|date:"Y-m-d H:i:s" }}</p></div>
+                                <div class="col-xs-12"><p style="line-height: 16px">{{ dealrec.dealcontent }}</p></div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block  ext_js %}
+    <script src="{% static 'jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
+    <script src="{% static 'jquery-file-upload/jquery.iframe-transport.js' %}"></script>
+    <script src="{% static 'jquery-file-upload/jquery.fileupload.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#uploadbtn').click(function () {
+                $('#fileupload').click();
+            });
+            $("#fileupload").fileupload({  //fileupload
+                dataType: 'json',
+                add: function (e, data) {
+                    var uploadErrors = [];
+                    //文件大小判断
+                    if (data.originalFiles[0].size > (5 * 1024 * 1024)) {
+                        uploadErrors.push('请上传不超过5M的文件');
+                    }
+
+                    if (uploadErrors.length > 0) {
+                        alert(uploadErrors.join("\n"));
+                    } else {
+                        data.submit();
+                    }
+                },
+                done: function (e, data) {  /* 3. PROCESS THE RESPONSE FROM THE SERVER  这里的data来自于JsonResponse传来的data*/
+                    if (data.result.is_valid) {
+                        $("#attachments").prepend(
+                            "<div class='col-sm-2 col-xs-6 detailtitle'><p>上传人</p></div>" +
+                            "<div class='col-sm-2 col-xs-6'><p>" + data.result.uploadman + "</p></div>" +
+                            "<div class='col-sm-2 col-xs-6 detailtitle'><p>上传时间</p></div>" +
+                            "<div class='col-sm-3 col-xs-6'><p>" + data.result.uploadtime + "</p></div>" +
+                            "<div class='col-sm-3 col-xs-12'><p class='text-center'><a href='/static/upload" + data.result.url +
+                            "' download='" + data.result.filename + "'>" + data.result.filename + "</a></p></div>"
+                        )
+                    }
+                }
+            });
+            $('#showdealbtn').click(function () {
+                if ($(this).children().hasClass('glyphicon-menu-down')) {
+                    $(this).children().removeClass('glyphicon-menu-down')
+                    $(this).children().addClass('glyphicon-menu-left')
+                } else {
+                    $(this).children().removeClass('glyphicon-menu-left')
+                    $(this).children().addClass('glyphicon-menu-down')
+                }
+            });
+            $('#showattachbtn').click(function () {
+                if ($(this).children().hasClass('glyphicon-menu-down')) {
+                    $(this).children().removeClass('glyphicon-menu-down')
+                    $(this).children().addClass('glyphicon-menu-left')
+                } else {
+                    $(this).children().removeClass('glyphicon-menu-left')
+                    $(this).children().addClass('glyphicon-menu-down')
+                }
+            });
+        })
+    </script>
+{% endblock %}
