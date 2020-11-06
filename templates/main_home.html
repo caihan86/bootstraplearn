@@ -49,10 +49,14 @@
             <div class="panel-body">
                 <div class="row text-center">
                     <div class="col-md-3 col-sm-4 col-xs-6" style="padding-bottom: 10px;">
-                        <button class="btn btn-default">捆绑修改工单</button>
+                        <button class="btn btn-default"
+                                onclick="window.open('{% url 'app:formnew' %}'+'?formtype=modifytype')">捆绑修改工单
+                        </button>
                     </div>
                     <div class="col-md-3 col-sm-4 col-xs-6" style="padding-bottom: 10px;">
-                        <button class="btn btn-default">取消捆绑工单</button>
+                        <button class="btn btn-default"
+                                onclick="window.open('{% url 'app:formnew' %}'+'?formtype=canceltype')">取消捆绑工单
+                        </button>
                     </div>
                 </div>
             </div>

@@ -4,10 +4,9 @@ from django.db import models
 f_status_convert = {
     0: '新建',
     1: '已提交',
-    2: '处理中',
-    3: '已审批',
-    4: '已退回',
-    5: '已作废'
+    2: '已审批',
+    3: '已退回',
+    4: '已作废'
 }
 
 
@@ -21,7 +20,7 @@ class ImeiForm(models.Model):
     f_lastdealman = models.CharField(max_length=16)
     f_dealman = models.CharField(max_length=16, default="", blank=True)
     f_type = models.CharField(max_length=16, null=True)
-    _f_status = models.SmallIntegerField()
+    _f_status = models.SmallIntegerField(default=0)
 
     @property
     def f_status(self):

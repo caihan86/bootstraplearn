@@ -15,5 +15,6 @@ urlpatterns = [
     url(r'^formdetail/(\d+)/', views.formdetail, name='formdetail'),
     url(r'^formvalid/', views.formvalid, name='formvalid'),
     url(r'^adddealrec/(\d+)/', views.adddealrec),
-    url(r'^uploadfile/', views.uploadfile, name='uploadfile')
+    url(r'^uploadfile/', views.uploadfile, name='uploadfile'),
+    url(r'^formnew/', views.formnew, name='formnew')
 ]

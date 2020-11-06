@@ -16,10 +16,45 @@
                         <div style="float: right">工单类型：{{ formdata.f_type }}</div>
                     </h4>
                     <div class="text-center">
-                        <button class="btn btn-success">受理</button>
-                        <button class="btn btn-primary">释放</button>
-                        <button class="btn btn-info">退回</button>
-                        <button class="btn btn-warning">作废</button>
+                        {% if formdata.f_status != '已审批' and formdata.f_status != '已作废' and formdata.f_dealman == user.username %}
+
+                            {% if formdata.f_status == '新建' or formdata.f_status == '已退回' %}
+                                <button id="zuofei" class="btn btn-warning" data-toggle="modal" data-target="#myModal">作废</button>
+                                <button id="tijiao" class="btn btn-success" data-toggle="modal" data-target="#myModal">提交</button>
+                            {% else %}
+                                <button id="tuihui" class="btn btn-warning" data-toggle="modal" data-target="#myModal">退回</button>
+                                <button id="shenpi" class="btn btn-success" data-toggle="modal" data-target="#myModal">审批</button>
+                            {% endif %}
+                            <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+                                 aria-labelledby="myModalLabel">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span></button>
+                                            <h4 class="modal-title" id="myModalLabel">工单处理</h4>
+                                        </div>
+                                        <form action="{% url 'app:formdetail' formdata.id %}" method="post">
+                                            {% csrf_token %}
+                                            <div class="modal-body">
+                                                <textarea class="form-control" id="dealcontent"
+                                                          name="dealcontent"
+                                                          placeholder="请输入处理意见"
+                                                          style="line-height: 16px;height:200px;overflow: auto"
+                                                          required="required"></textarea>
+                                                <input type="hidden" id="nextstatus" name="nextstatus" value="">
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">保存并转派下一环节</button>
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+
                     </div>
                 </div>
             </div>
@@ -152,6 +187,9 @@
     <script src="{% static 'jquery-file-upload/jquery.iframe-transport.js' %}"></script>
     <script src="{% static 'jquery-file-upload/jquery.fileupload.js' %}"></script>
     <script type="text/javascript">
+        $('#myModal').on('show.bs.modal', function (e) {
+            $('#nextstatus').val(e.relatedTarget.id)
+        })
         $(function () {
             $('#uploadbtn').click(function () {
                 $('#fileupload').click();

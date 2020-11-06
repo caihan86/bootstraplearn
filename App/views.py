@@ -19,13 +19,13 @@ def index(request):
     if request.method == 'GET':
         userid = request.session['userid']
         user = User.objects.get(id=userid)
-        dealforms = ImeiForm.objects.filter(Q(f_dealman=user.username))
+        dealforms = ImeiForm.objects.filter(~Q(_f_status=4)).filter(Q(f_dealman=user.username))
         dealforms = dealforms.order_by('-f_lastmodifytime')
         deal_paginator = Paginator(dealforms, 5)
         dealformslist = deal_paginator.page(1)
         deal_range = deal_paginator.page_range
         deal_count = dealforms.count()
-        myforms = ImeiForm.objects.filter(Q(f_createman=user.username))
+        myforms = ImeiForm.objects.filter(~Q(_f_status=4)).filter(Q(f_createman=user.username))
         myforms = myforms.order_by('-f_lastmodifytime')
         my_paginator = Paginator(myforms, 5)
         myformslist = my_paginator.page(1)
@@ -241,12 +241,13 @@ def getmyform(request):
 
 
 def formdetail(request, id):
+    userid = request.session['userid']
+    user = User.objects.get(id=userid)
+
     if request.method == 'GET':
         formdata = ImeiForm.objects.get(id=id)
         dealdata = formdata.form_dealrec.order_by('-dealtime')
         attachdata = formdata.form_attach.order_by('-uploadtime')
-        for attach in attachdata:
-            print(attach.filename)
         if formdata.f_type == 'modifytype':
             formdata.f_type = '修改捆绑'
         elif formdata.f_type == 'canceltype':
@@ -255,7 +256,41 @@ def formdetail(request, id):
             'title': 'ImeiM&C-工单详情',
             'formdata': formdata,
             'dealdata': dealdata,
-            'attachdata': attachdata
+            'attachdata': attachdata,
+            'user': user
+        }
+        return render(request, 'form_detail.html', context=data)
+    elif request.method == 'POST':
+        formdata = ImeiForm.objects.get(id=id)
+        dealcontent = request.POST.get('dealcontent')
+        nextstatus = request.POST.get('nextstatus')
+        dealrec = DealRecorde()
+        dealrec.form = formdata
+        dealrec.dealman = user.username
+        dealrec.dealcontent = dealcontent
+        dealrec.save()
+        formdata = ImeiForm.objects.get(id=id)
+        if nextstatus == 'zuofei':
+            formdata.f_status = 4
+        elif nextstatus == 'tijiao':
+            formdata.f_status = 1
+        elif nextstatus == 'shenpi':
+            formdata.f_status = 2
+        elif nextstatus == 'tuihui':
+            formdata.f_status = 3
+        formdata.save()
+        dealdata = formdata.form_dealrec.order_by('-dealtime')
+        attachdata = formdata.form_attach.order_by('-uploadtime')
+        if formdata.f_type == 'modifytype':
+            formdata.f_type = '修改捆绑'
+        elif formdata.f_type == 'canceltype':
+            formdata.f_type = '取消捆绑'
+        data = {
+            'title': 'ImeiM&C-工单详情',
+            'formdata': formdata,
+            'dealdata': dealdata,
+            'attachdata': attachdata,
+            'user': user
         }
         return render(request, 'form_detail.html', context=data)
 
@@ -301,3 +336,30 @@ def formvalid(request):
         if formdata:
             result = {'is_exist': True}
         return JsonResponse(result)
+
+
+def formnew(request):
+    if request.method == 'GET':
+        formtype = request.GET.get('formtype')
+        if formtype == 'modifytype':
+            formtype = '修改捆绑'
+        elif formtype == 'canceltype':
+            formtype = '取消捆绑'
+        data = {
+            'title': 'ImeiM&C-新建工单',
+            'formtype': formtype
+        }
+        return render(request, 'form_new.html', context=data)
+    elif request.method == 'POST':
+        formtype = request.POST.get('formtype')
+        title = request.POST.get('inputTitle')
+        descrp = request.POST.get('inputDescrp')
+        userid = request.session['userid']
+        user = User.objects.get(id=userid)
+        form = ImeiForm()
+        form.f_title = title
+        form.f_type = formtype
+        form.f_content = descrp
+        form.f_createman = form.f_dealman = form.f_lastdealman = user.username
+        form.save()
+        return redirect(reverse('app:formdetail', args={form.id}))
