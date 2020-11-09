@@ -142,6 +142,8 @@ def formsearch(request):
         formtype = request.POST.get('inputType')
         begintime = request.POST.get('inputBegintime')
         endtime = request.POST.get('inputEndtime')
+        print(formtype)
+
         searchresult = ImeiForm.objects.filter(Q(_f_status=status)).filter(Q(f_type=formtype))
         if formid.strip() != '':
             searchresult = searchresult.filter(Q(id=formid))
@@ -268,17 +270,21 @@ def formdetail(request, id):
         dealrec.form = formdata
         dealrec.dealman = user.username
         dealrec.dealcontent = dealcontent
-        dealrec.save()
         formdata = ImeiForm.objects.get(id=id)
         if nextstatus == 'zuofei':
             formdata.f_status = 4
+            dealrec.operate = '作废'
         elif nextstatus == 'tijiao':
             formdata.f_status = 1
+            dealrec.operate = '提交'
         elif nextstatus == 'shenpi':
             formdata.f_status = 2
+            dealrec.operate = '审批'
         elif nextstatus == 'tuihui':
             formdata.f_status = 3
+            dealrec.operate = '退回'
         formdata.save()
+        dealrec.save()
         dealdata = formdata.form_dealrec.order_by('-dealtime')
         attachdata = formdata.form_attach.order_by('-uploadtime')
         if formdata.f_type == 'modifytype':
@@ -342,12 +348,13 @@ def formnew(request):
     if request.method == 'GET':
         formtype = request.GET.get('formtype')
         if formtype == 'modifytype':
-            formtype = '修改捆绑'
+            formtypechs = '修改捆绑'
         elif formtype == 'canceltype':
-            formtype = '取消捆绑'
+            formtypechs = '取消捆绑'
         data = {
             'title': 'ImeiM&C-新建工单',
-            'formtype': formtype
+            'formtype': formtype,
+            'formtypechs': formtypechs
         }
         return render(request, 'form_new.html', context=data)
     elif request.method == 'POST':

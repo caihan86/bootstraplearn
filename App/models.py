@@ -58,11 +58,13 @@ class User(models.Model):
 class DealRecorde(models.Model):
     dealman = models.CharField(max_length=32)
     dealtime = models.DateTimeField(auto_now_add=True)
+    operate = models.CharField(max_length=16, default='')
     dealcontent = models.CharField(max_length=500)
     form = models.ForeignKey(ImeiForm, related_name='form_dealrec', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'deal_recorde'
+
 
 
 class Attachment(models.Model):

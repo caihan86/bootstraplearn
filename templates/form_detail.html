@@ -157,21 +157,23 @@
             <div class="panel-heading">
                 <div class="panel-title">
                     <h4>处理日志
-                        <button id="showdealbtn" href="#dealcontent" data-toggle="collapse" style="float: right">
+                        <button id="showdealbtn" href="#dealpanel" data-toggle="collapse" style="float: right">
                             <span class="glyphicon glyphicon-menu-down" onclick=""></span></button>
                     </h4>
 
                 </div>
             </div>
-            <div id="dealcontent" class="panel-collapse collapse in">
+            <div id="dealpanel" class="panel-collapse collapse in">
                 <div class="panel-body">
                     <div class="container-fluid" style="border: solid 1px #aaaaaa">
                         {% for dealrec in dealdata %}
                             <div class="row" style="border: solid 1px #aaaaaa">
-                                <div class="col-sm-3 col-xs-6 detailtitle"><p>处理人</p></div>
-                                <div class="col-sm-3 col-xs-6"><p>{{ dealrec.dealman }}</p></div>
-                                <div class="col-sm-3 col-xs-6 detailtitle"><p>处理时间</p></div>
-                                <div class="col-sm-3 col-xs-6"><p>{{ dealrec.dealtime|date:"Y-m-d H:i:s" }}</p></div>
+                                <div class="col-sm-2 col-xs-6 detailtitle"><p>处理人</p></div>
+                                <div class="col-sm-2 col-xs-6"><p>{{ dealrec.dealman }}</p></div>
+                                <div class="col-sm-2 col-xs-6 detailtitle"><p>操作</p></div>
+                                <div class="col-sm-2 col-xs-6"><p>{{ dealrec.operate }}</p></div>
+                                <div class="col-sm-2 col-xs-6 detailtitle"><p>处理时间</p></div>
+                                <div class="col-sm-2 col-xs-6"><p>{{ dealrec.dealtime|date:"Y-m-d H:i:s" }}</p></div>
                                 <div class="col-xs-12"><p style="line-height: 16px">{{ dealrec.dealcontent }}</p></div>
                             </div>
                         {% endfor %}
